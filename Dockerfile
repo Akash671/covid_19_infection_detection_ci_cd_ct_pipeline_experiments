@@ -2,14 +2,24 @@ FROM python:3.10
 
 WORKDIR /app
 
-COPY api/ /app/api/
-RUN pip install --no-cache-dir -r /app/api/requirements.txt
+# Combine all requirements for simplicity in this case
+# Assuming you have a combined_requirements.txt or use the separate ones
+COPY api/requirements.txt /app/api_requirements.txt
+COPY ui/requirements.txt /app/ui_requirements.txt
+RUN cat /app/api_requirements.txt /app/ui_requirements.txt > /app/requirements.txt \
+    && pip install --no-cache-dir -r /app/requirements.txt
 
-COPY ui/ /app/ui/
-RUN pip install --no-cache-dir -r /app/ui/requirements.txt
+# Copy all application code
+COPY . /app
 
-EXPOSE 8000
+# Create a start script (start.sh)
+RUN echo '#!/bin/bash' > /app/start.sh \
+    && echo 'uvicorn api.main:app --host 0.0.0.0 --port 8001 &' >> /app/start.sh \
+    && echo 'streamlit run ui/streamlit_app.py --server.port 7860 --server.address 0.0.0.0' >> /app/start.sh \
+    && chmod +x /app/start.sh
+
+# Expose the single port that the UI will use (this is the only one Space cares about)
 EXPOSE 7860
 
-CMD uvicorn api.main:app --host 0.0.0.0 --port 8001 & \
-    streamlit run ui/streamlit_app.py --server.port 7860 --server.address 0.0.0.0
+# Run the start script
+CMD ["/app/start.sh"]
