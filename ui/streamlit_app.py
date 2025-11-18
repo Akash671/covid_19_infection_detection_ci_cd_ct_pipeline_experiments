@@ -5,11 +5,11 @@ import requests
 FASTAPI_URL = "http://127.0.0.1:8001/predict" 
 
 st.set_page_config(
-    page_title="COVID-19 Infection Detection -Developed by AK",
+    page_title="COVID-19 Infection Detection",
     layout="centered"
 )
 
-st.title("🦠 COVID-19 Infection Detection ML App")
+st.title("🦠 COVID-19 Infection Detection ML App -Developed by AK")
 st.write("Enter patient details below to predict infection probability.")
 
 st.markdown("---")
