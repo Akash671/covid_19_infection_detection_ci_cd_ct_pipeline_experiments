@@ -4,7 +4,8 @@ emoji: 🦠
 colorFrom: blue
 colorTo: indigo
 sdk: streamlit
-app_file: streamlit_app.py
+# CRITICAL FIX: Explicitly set your Streamlit app file name
+app_file: streamlit_app.py 
 ---
 
 # 🚀 COVID-19 Detection Pipeline
