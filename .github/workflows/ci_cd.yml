@@ -28,7 +28,8 @@ jobs:
     #  run: pip install pytest
 
     - name: Run training
-      run: python training/train.py
+      run: python -m training.train
+      #run: python training/train.py
 
     - name: Commit updated model
       run: |
