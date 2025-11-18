@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 # NOTE: Ensure this URL and port match your Uvicorn server (e.g., 8001)
-FASTAPI_URL = "http://localhost:8001/predict" 
+FASTAPI_URL = "http://127.0.0.1:8001/predict" 
 
 st.set_page_config(
     page_title="COVID-19 Infection Detection",
