@@ -1,19 +1,17 @@
 name: Model Training and Artifact Update Pipeline
 
-# 1. CRITICAL FIX: Define when the workflow should run
+# 1. FIX: Define when the workflow should run (Trigger on push and manually)
 on:
-  # Run automatically when code is pushed to the main branch
   push:
     branches:
       - main
-  # Allow manual triggering from the GitHub Actions UI
   workflow_dispatch:
 
 jobs:
   train_and_update_model:
     runs-on: ubuntu-latest
     
-    # 2. CRITICAL FIX: Grant write permission to the GITHUB_TOKEN for this job
+    # 2. FIX: Grant write permission to the GITHUB_TOKEN for this job 
     permissions:
       contents: write 
       
@@ -21,7 +19,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # 3. CRITICAL FIX: Use the GITHUB_TOKEN for subsequent push operations
+          # 3. FIX: Use the GITHUB_TOKEN for authenticated push
           token: ${{ secrets.GITHUB_TOKEN }}
           # Fetch full history is necessary for git commands like push/commit
           fetch-depth: 0 
@@ -32,11 +30,10 @@ jobs:
           python-version: '3.10'
           
       - name: Install dependencies
-        # Assuming your dependencies are consolidated into a single requirements.txt 
-        # for the training pipeline (or you can install api/training requirements)
+        # Assuming your dependencies are in training/requirements.txt
         run: |
           pip install --upgrade pip
-          pip install -r training/requirements.txt # Adjust this path as needed
+          pip install -r training/requirements.txt 
 
       - name: Run training and commit changes
         run: |
@@ -44,19 +41,21 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           
-          # 4. CRITICAL FIX: Run the training script as a module
+          # Run the training script as a module
           python -m training.train
           
-          # Add the new model artifact
-          git add model_artifacts/model_20251118_152002.pkl
+          # 4. CRITICAL FIX: Add the stable artifact paths, NOT the time-stamped path.
+          # The training script updates these two files every run:
+          git add model_artifacts/latest_model.pkl
+          git add api/model.pkl
           
           # Check if there are any changes to commit before proceeding
-          if git status --porcelain | grep -q 'model_artifacts/'; then
+          if git status --porcelain | grep -q 'model_artifacts/' || git status --porcelain | grep -q 'api/'; then
             git commit -m "CI/CD: Updated model via training pipeline [skip ci]"
             
             # Push the changes (This uses the token set in the checkout step)
             git push
-            echo "Successfully committed and pushed new model artifact."
+            echo "Successfully committed and pushed new model artifacts."
           else
-            echo "No changes in model artifacts. Skipping commit."
+            echo "No changes in tracked artifacts. Skipping commit."
           fi
