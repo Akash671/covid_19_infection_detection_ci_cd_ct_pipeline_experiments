@@ -11,5 +11,4 @@ app_port: 7860 # 👈 The port the main application (Streamlit) will be listenin
 
 This Hugging Face Space uses a custom Docker environment to launch both the internal FastAPI model API and the Streamlit frontend. The Streamlit UI is exposed on port 7860.
 
-
-## Live at Huggingface Space : https://huggingface.co/spaces/Akash671/covid_19_infection_detection_ci_cd_ct_pipeline_experiments
+## 🚀 Live at Huggingface Space : https://huggingface.co/spaces/Akash671/covid_19_infection_detection_ci_cd_ct_pipeline_experiments
