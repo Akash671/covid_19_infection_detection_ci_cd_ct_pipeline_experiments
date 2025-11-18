@@ -5,7 +5,7 @@ import requests
 FASTAPI_URL = "http://127.0.0.1:8001/predict" 
 
 st.set_page_config(
-    page_title="COVID-19 Infection Detection",
+    page_title="COVID-19 Infection Detection -Developed by AK",
     layout="centered"
 )
 
