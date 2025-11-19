@@ -1,6 +1,5 @@
-name: Model Training and Artifact Update Pipeline
+name: Model Training, Testing, and Artifact Update Pipeline
 
-# 1. FIX: Define when the workflow should run (Trigger on push and manually)
 on:
   push:
     branches:
@@ -8,54 +7,71 @@ on:
   workflow_dispatch:
 
 jobs:
-  train_and_update_model:
+  test_train_deploy:
     runs-on: ubuntu-latest
-    
-    # 2. FIX: Grant write permission to the GITHUB_TOKEN for this job 
+
     permissions:
-      contents: write 
-      
+      contents: write
+
     steps:
+
+      # -------------------------
+      # 1. Checkout Repository
+      # -------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # 3. FIX: Use the GITHUB_TOKEN for authenticated push
           token: ${{ secrets.GITHUB_TOKEN }}
-          # Fetch full history is necessary for git commands like push/commit
-          fetch-depth: 0 
+          fetch-depth: 0
 
+      # -------------------------
+      # 2. Setup Python
+      # -------------------------
       - name: Setup Python environment
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          
+
+      # -------------------------
+      # 3. Install dependencies
+      # -------------------------
       - name: Install dependencies
-        # Assuming your dependencies are in training/requirements.txt
         run: |
           pip install --upgrade pip
-          pip install -r training/requirements.txt 
+          pip install -r training/requirements.txt
+          # Install test dependencies
+          pip install pytest
 
-      - name: Run training and commit changes
+      # -------------------------
+      # 4. Run tests      (CI)
+      # -------------------------
+      - name: Run tests
         run: |
-          # Configure Git user for the commit
+          echo "Running automated tests..."
+          pytest tests/ --disable-warnings --maxfail=1
+
+      # -------------------------
+      # 5. Train model     (CT)
+      # -------------------------
+      - name: Run training
+        run: |
+          python -m training.train
+
+      # -------------------------
+      # 6. Commit and Push Model Artifacts  (CD)
+      # -------------------------
+      - name: Commit updated model artifacts
+        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          
-          # Run the training script as a module
-          python -m training.train
-          
-          # 4. CRITICAL FIX: Add the stable artifact paths, NOT the time-stamped path.
-          # The training script updates these two files every run:
+
           git add model_artifacts/latest_model.pkl
           git add api/model.pkl
-          
-          # Check if there are any changes to commit before proceeding
-          if git status --porcelain | grep -q 'model_artifacts/' || git status --porcelain | grep -q 'api/'; then
-            git commit -m "CI/CD: Updated model via training pipeline [skip ci]"
-            
-            # Push the changes (This uses the token set in the checkout step)
+
+          if git status --porcelain | grep -qE 'model_artifacts|api/model.pkl'; then
+            git commit -m "CI/CD: Updated model via pipeline [skip ci]"
             git push
-            echo "Successfully committed and pushed new model artifacts."
+            echo "Model artifacts updated and pushed."
           else
-            echo "No changes in tracked artifacts. Skipping commit."
+            echo "No changes in artifacts. Nothing to commit."
           fi
