@@ -11,51 +11,46 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write 
+      contents: write
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: Setup Python environment
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      # -------------------------------
-      # FIX: install ALL dependencies
-      # -------------------------------
-      - name: Install all dependencies (training + api + ui)
+      - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r training/requirements.txt
           pip install -r api/requirements.txt
           pip install -r ui/requirements.txt
+          pip install pytest
 
-      # Run automated tests BEFORE training
-      - name: Run tests
+      - name: Run automated tests
         run: |
           echo "Running automated tests..."
           pytest -vv
 
-      - name: Run training and commit updated model
+      - name: Run training and commit changes
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
           python -m training.train
-
+          
           git add model_artifacts/latest_model.pkl
           git add api/model.pkl
 
-          if git status --porcelain | grep .; then
+          if git status --porcelain | grep -q 'model_artifacts/' || git status --porcelain | grep -q 'api/'; then
             git commit -m "CI/CD: Updated model via training pipeline [skip ci]"
             git push
-            echo "✔ Model updated and pushed."
           else
-            echo "No model changes detected."
+            echo "No changes in tracked artifacts. Skipping commit."
           fi
