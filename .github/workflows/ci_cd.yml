@@ -17,10 +17,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Use a Personal Access Token (PAT) if you want this push 
-          # to trigger other GitHub Actions.
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+          lfs: true # Added to handle your .pkl model artifacts
 
       - name: Setup Python environment
         uses: actions/setup-python@v5
@@ -50,7 +49,7 @@ jobs:
           git add model_artifacts/latest_model.pkl
           git add api/model.pkl
 
-          # REMOVED [skip ci] so the CD can trigger
+          # IMPORTANT: Removed [skip ci] so Hugging Face sees the update
           if git status --porcelain | grep -q 'model_artifacts/' || git status --porcelain | grep -q 'api/'; then
             git commit -m "CI/CD: Updated model via training pipeline"
             git push
@@ -62,6 +61,5 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # This forces the update to your Hugging Face repo
-          # Change 'spaces' to 'models' if you are using a Model repo instead of a Space
-          git push --force https://YOUR_HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/YOUR_HF_USERNAME/YOUR_REPO_NAME main
+          # Specific URL for your Akash671 Space
+          git push --force https://Akash671:$HF_TOKEN@huggingface.co/spaces/Akash671/covid_19_infection_detection_ci_cd_ct_pipeline_experiments main
