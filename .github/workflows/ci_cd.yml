@@ -19,7 +19,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          lfs: true # Added to handle your .pkl model artifacts
+          lfs: true # Added to handle your .pkl ML model artifacts 
 
       - name: Setup Python environment
         uses: actions/setup-python@v5
