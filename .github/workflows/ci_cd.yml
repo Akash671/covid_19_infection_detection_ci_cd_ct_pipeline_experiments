@@ -48,15 +48,18 @@ jobs:
 
           python -m training.train
           
-          git add model_artifacts/latest_model.pkl
+          git add model_artifacts/*.pkl
           git add api/model.pkl
 
           # IMPORTANT: Removed [skip ci] so Hugging Face sees the update
-          if git status --porcelain | grep -q 'model_artifacts/' || git status --porcelain | grep -q 'api/'; then
-            git commit -m "CI/CD: Updated model via training pipeline"
-            git push
-          else
+          # Check the staged index: training is seeded, so latest_model.pkl/model.pkl
+          # can be byte-identical while a new versioned artifact still needs committing.
+          if git diff --cached --quiet; then
             echo "No changes in tracked artifacts. Skipping commit."
+          else
+            git commit -m "CI/CD: Updated model via training pipeline"
+            git pull --rebase
+            git push
           fi
 
       - name: Push to Hugging Face
