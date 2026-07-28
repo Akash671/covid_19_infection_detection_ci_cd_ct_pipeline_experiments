@@ -9,6 +9,9 @@ jobs:
   retrain:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
@@ -22,7 +25,7 @@ jobs:
       run: pip install -r training/requirements.txt
 
     - name: Run retraining
-      run: python training/train.py
+      run: python -m training.train
 
     - name: Commit updated model versions
       run: |
@@ -33,4 +36,5 @@ jobs:
         git add api/model.pkl
 
         git commit -m "CT: Automated retraining model update" || echo "No changes"
+        git pull --rebase
         git push

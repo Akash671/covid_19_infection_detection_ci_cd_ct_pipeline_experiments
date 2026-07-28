@@ -10,6 +10,6 @@ def clean_data(df: pd.DataFrame):
         df = df.drop("Sample ID", axis=1)
 
     # Example: fill missing values with median
-    df = df.fillna(df.median())
+    df = df.fillna(df.median(numeric_only=True))
 
     return df

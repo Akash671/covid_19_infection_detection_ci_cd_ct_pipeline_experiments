@@ -12,7 +12,7 @@ FASTAPI_PID=$!
 echo "Waiting for FastAPI to become ready on http://127.0.0.1:8001..."
 ATTEMPTS=0
 MAX_ATTEMPTS=20  # Give it up to 20 seconds
-until curl -s http://127.0.0.1:8001/health > /dev/null || [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; do
+until curl -sf http://127.0.0.1:8001/health > /dev/null || [ $ATTEMPTS -eq $MAX_ATTEMPTS ]; do
     echo "FastAPI not ready yet. Waiting 1 second..."
     sleep 1
     ATTEMPTS=$((ATTEMPTS + 1))

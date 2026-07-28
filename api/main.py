@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
-import numpy as np
 import pandas as pd
 from pathlib import Path
 
@@ -68,3 +67,8 @@ def predict(data: PredictionInput):
 @app.get("/")
 def home():
     return {"message": "FastAPI backend running"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
